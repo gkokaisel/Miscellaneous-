@@ -7,7 +7,7 @@ Program for converting tests to Respondus format
 '''
 
 import sys
-import re
+import zipfile, re
 import easygui
 
 # regular expressions to find test answers (very useful pythonic regex tool online http://re-try.appspot.com/)
@@ -94,6 +94,16 @@ case_two = False
 case_three = False
 case_four = False
 
+
+# load GUI to begin program dialog
+
+msg = "This program will attempt to format a test file for use with Respondus, Do you want to continue?"
+title = "Respondus Converter version 1.0 Beta"
+if easygui.ccbox(msg, title):     # show a Continue/Cancel dialog
+    pass  # user chose Continue
+else:  # user chose Cancel
+    sys.exit(0)
+
 # launch GUI to choose location for output file
 
 saveout = sys.stdout
@@ -103,16 +113,27 @@ sys.stdout = outfile
 
 # launch GUI to load test file, and store as string (replacing singles lines with double lines to make matching regexes easier)
 
-input_file = easygui.fileopenbox(msg='Where is test to format?')
-try:
-    with open(input_file) as inputFileHandle:
-        test = inputFileHandle.read().replace('\n', '''
+file_type = easygui.ynbox(msg="Choose file type (Note: Word is very experimental)", choices=["Plain text file (.txt)", "Word 2007, 2010 (.docx)"])
 
-''')
-except IOError:
-    sys.stderr.write('Could not open %s\n' % input_file)
-    sys.exit(-1)
-
+if file_type is 1:
+    
+    input_file = easygui.fileopenbox(msg='Where is test to format?')
+    try:
+        with open(input_file) as inputFileHandle:
+            test = inputFileHandle.read().replace('\n', '\n\n')
+    except IOError:
+        sys.stderr.write('Could not open %s\n' % input_file)
+        sys.exit(-1)  
+    
+else:
+    
+    docx = zipfile.ZipFile(easygui.fileopenbox(msg='Where is test to format?'))
+    content = docx.read('word/document.xml')     
+    test = re.sub('<(.|\n)*?>','\n',content)
+  
+    
+     
+        
 # find matches for the various test cases
 # re.I ignores case, and re.X ignores comments and whitespace (unless included in pattern) within regular expression
 # If Case 1
@@ -188,6 +209,10 @@ for answer in answer_list:
         insensitive_answer = re.compile(re.escape('answer:'),
                 flags=re.I)
         print insensitive_answer.sub('', answer_list)
+
+# load GUI to display success message
+
+easygui.msgbox("Format complete!", ok_button="Good job!")
 
 # flush output
 
