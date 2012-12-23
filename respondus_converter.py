@@ -8,9 +8,9 @@ Program for converting tests to Respondus format
 
 import sys
 import zipfile, re
-import easygui
+import easygui  # http://www.ferg.org/easygui/tutorial.html#contents_item_9.2
 
-# regular expressions to find test answers (very useful pythonic regex tool online http://re-try.appspot.com/)
+# regular expressions to find test_file answers (very useful pythonic regex tool online http://re-try.appspot.com/)
 
 regex_case_one = \
     r'''
@@ -89,150 +89,158 @@ regex_case_four_b = \
             
 # initialize global variables
 
-# boolean flags for each test case
+# boolean flags are for each regular expression case
 case_one = False
 case_two = False
 case_three = False
 case_four = False
 
-# list for storing answers
+# a list for storing answers
 answer_key = []
 
-# strings for working with the i/o files
-saveout = ''
-outfile = ''
-test = ''
+# some strings for working with the i/o files
+save_output = ''
+output_file = ''
+test_file = ''
 
 # helper function to launch program dialog, and to set input and output file paths
 def set_file_paths():
-    global saveout, outfile, test
+    global save_output, output_file, test_file
     
     # load GUI to begin program dialog   
-    msg = "This program will attempt to format a test file for use with Respondus, Do you want to continue?"
+    msg = "This program will attempt to format a test file file for use with Respondus, Do you want to continue?"
     title = "Respondus Converter version 1.0 Beta"
-    if easygui.ccbox(msg, title):     # show a Continue/Cancel dialog
+    if easygui.ccbox(msg, title):  # show a Continue/Cancel dialog
         pass  # user chose Continue
     else:  # user chose Cancel
         sys.exit(0)
     
     # launch GUI to choose location for output file    
-    saveout = sys.stdout
-    outfile = open(easygui.filesavebox(msg='Where to save formatted test?',
+    save_output = sys.stdout
+    output_file = open(easygui.filesavebox(msg='Where to save formatted test file?',
                    default='formatted_test.txt'), 'w')
-    sys.stdout = outfile
+    sys.stdout = output_file
     
     # launch GUI to load test file, and store as string (replacing singles lines with double lines to make matching regexes easier)    
-    file_type = easygui.ynbox(msg="Choose file type (Note: Word is very experimental)", choices=["Plain text file (.txt)", "Word 2007, 2010 (.docx)"])
+    file_choice = easygui.indexbox(msg="Choose file type (Note: Word is very experimental)",
+                                   choices=("Plain text file (.txt)", "Word 2007, 2010 file (.docx)", "Quit"))
     
-    if file_type is 1:        
-        input_file = easygui.fileopenbox(msg='Where is test to format?')
+    if file_choice is 0:   
+        
+        # launch GUI to load test file     
+        input_file = easygui.fileopenbox(msg='Where is test file to format?')
         try:
             with open(input_file) as inputFileHandle:
-                test = inputFileHandle.read().replace('\n', '\n\n')
+                test_file = inputFileHandle.read().replace('\n', '\n\n')
         except IOError:
             sys.stderr.write('Could not open %s\n' % input_file)
             sys.exit(-1)  
         
-    else: 
-        # load document and unzip files       
-        docx = zipfile.ZipFile(easygui.fileopenbox(msg='Where is test to format?'))
+    elif file_choice is 1: 
+        
+        # launch GUI to load document and unzip files       
+        docx = zipfile.ZipFile(easygui.fileopenbox(msg='Where is test file to format?'))
+        
         # load xml document from word directory
         content = docx.read('word/document.xml')
+        
         # substitute xml tags with line breaks (still needs tweaking, but sorta works)     
-        test = re.sub('<(.|\n)*?>','\n',content)
+        test_file = re.sub('<(.|\n)*?>', '\n', content)
+    else:
+        sys.exit(0)
  
-# helper function to distinquish MC questions from answer key 
-def separate_questions_from_answer_key():      
+# helper function to distinquish between test questions and test answer key 
+def process_test_file():      
     global answer_key, case_one, case_two, case_three, case_four           
-    # find matches for the various test cases
-    # re.I ignores case, and re.X ignores comments and whitespace (unless included in pattern) within regular expression
+    # find matches for the various regular expression cases
+    # re.I ignores letter case, and re.X ignores comments and whitespace (unless included in pattern) within regular expression
     
-    # If Case 1    
-    answer_match = re.findall(regex_case_one, test, flags=re.I | re.X)
+    # If case 1    
+    answer_match = re.findall(regex_case_one, test_file, flags=re.I | re.X)
     if answer_match:
         case_one = True
         answer_key = answer_match        
     
-        # prints test without answers by substituting matched expression with empty string    
-        print re.sub(regex_case_one, '', test, flags=re.I | re.X)
+        # prints the test questions without answer key by substituting matched answers with empty string    
+        print re.sub(regex_case_one, '', test_file, flags=re.I | re.X)
         
     
-    # If Case 2    
-    answer_match = re.findall(regex_case_two, test, flags=re.I | re.X)
+    # If case 2    
+    answer_match = re.findall(regex_case_two, test_file, flags=re.I | re.X)
     if answer_match:
         case_two = True
         answer_key = answer_match
         
-        # prints test without answers by substituting matched expression with empty string    
-        print re.sub(regex_case_two, '', test, flags=re.I | re.X)
+        # prints the test questions without answer key by substituting matched answers with empty string   
+        print re.sub(regex_case_two, '', test_file, flags=re.I | re.X)
        
     
-    # If Case 3    
-    answer_match = re.findall(regex_case_three_a, test, flags=re.I | re.X)
+    # If case 3    
+    answer_match = re.findall(regex_case_three_a, test_file, flags=re.I | re.X)
     if answer_match:
         case_three = True
         answer_key = answer_match
         
-        # prints test without answers by substituting matched expression with empty string    
-        print re.sub(regex_case_three_b, '', test, flags=re.I | re.X)
+        # prints the test questions without answer key by substituting matched answers with empty string    
+        print re.sub(regex_case_three_b, '', test_file, flags=re.I | re.X)
     
     
-    # If Case 4    
-    answer_match = re.findall(regex_case_four_a, test, re.I | re.X)
+    # If case 4    
+    answer_match = re.findall(regex_case_four_a, test_file, re.I | re.X)
     if answer_match:
         case_four = True
         answer_key = answer_match
         
-        # prints test without answers by substituting matched expression with empty string    
-        print re.sub(regex_case_four_b, '', test, flags=re.I | re.X)
+        # prints the test questions without answer key by substituting matched answers with empty string     
+        print re.sub(regex_case_four_b, '', test_file, flags=re.I | re.X)
        
 # helper function to format answer key in Respondus format   
 def format_answer_key():   
     global answer_key, case_one, case_two, case_three, case_four    
      
-    # print answer list as a numerically ordered list of answers in Respondus format  
+    # the following code will print answer key as a numerically ordered list of answers in Respondus format  
     print 'Answers:'
     number = 0
     for answer in answer_key:
         number += 1
     
-        # append ordered numbers to answer list    
+        # append ordered numbers to answer key   
         answer_key = str(number) + '.' + answer
     
-        # remove the word answer from answer list ignoring case sensitivity    
+        # remove the word answer from answer key ignoring case sensitivity    
         if case_one or case_three:
     
-            # returns the string in qoutes wherever found without case sensitivity    
+            # returns the answer string in qoutes wherever found without case sensitivity    
             insensitive_answer = re.compile(re.escape('answer'), flags=re.I)
     
-            # substitutes the literal string from above with an empty string (thereby removing it from list)    
+            # substitutes the answer string with an empty string (thereby removing it from list)    
             print insensitive_answer.sub('', answer_key)
             
         elif case_two:
             
-            # returns the string in qoutes wherever found without case sensitivity   
+            # returns the answer string in qoutes wherever found without case sensitivity    
             insensitive_answer = re.compile(re.escape('ans:'), flags=re.I)
             
-            # substitutes the literal string from above with an empty string (thereby removing it from list)  
+            # substitutes the answer string with an empty string (thereby removing it from list)  
             print insensitive_answer.sub('', answer_key)
             
         elif case_four:
             
-            # returns the string in qoutes wherever found without case sensitivity   
+            # returns the answer string in qoutes wherever found without case sensitivity   
             insensitive_answer = re.compile(re.escape('answer:'), flags=re.I)
             
-            # substitutes the literal string from above with an empty string (thereby removing it from list) 
+            # substitutes the answer string with an empty string (thereby removing it from list)  
             print insensitive_answer.sub('', answer_key)
 
 # load helper functions
 set_file_paths()
-separate_questions_from_answer_key()
+process_test_file()
 format_answer_key()
 
 # load GUI to display success message
-easygui.msgbox("Format complete!", ok_button="Good job!")
+easygui.msgbox("Format complete!", ok_button="Close", image="tick_64.png")
 
 # flush and close output
-outfile.flush()
-outfile.close()
-sys.stdout = saveout
+output_file.flush()
+output_file.close()
+sys.stdout = save_output
