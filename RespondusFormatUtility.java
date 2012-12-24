@@ -29,9 +29,9 @@ public class RespondusFormatUtility {
         String input = new Scanner(rawTest).useDelimiter("\\Z").next();
 
         // find answer key pattern
-        Pattern p = Pattern.compile("(Answer:|ANSWER:|ANS:)(.*)");     
+        Pattern p = Pattern.compile("(Answer:|ANSWER:|ANS:)(.*)");
         Matcher m = p.matcher(input);
-     
+
         // store questions
         StringBuffer questionList = new StringBuffer();
 
@@ -44,23 +44,23 @@ public class RespondusFormatUtility {
             number += 1;
             System.out.println("Found: " + m.group(1) + m.group(2));
             m.appendReplacement(questionList, "");
-            
+
             //replace any extra comments or feedback data in the answer list
             answerList.add(number + "." + m.group(2).replaceAll("%.*", ""));
 
-        }  
+        }
         //m.appendTail(questionList); will append whatever followed the last match  
         System.out.println();
-        
+
         // clear extra comments or feedback data from test questions
         String cleanedQuestionList = questionList.toString().replaceAll("Diff:.*|Topic:.*|Skill:.*|Geog Standards:.*|Bloom's Taxonomy:.*", "");
-             
+
         // print to console
         //String header = "\n";
         String footer = "\n";
         String delim = "\n";
-        StringBuilder test = new StringBuilder();        
-        System.out.println(cleanedQuestionList);  
+        StringBuilder test = new StringBuilder();
+        System.out.println(cleanedQuestionList);
         System.out.println("Answers:");
         for (String answer : answerList) {
             test.append(answer).append(delim);
