@@ -21,7 +21,7 @@ import java.util.regex.*;
 public class RespondusFormatUtility {
 
     public static void main(String[] args) throws FileNotFoundException, IOException {
-        
+
         Scanner getfile = new Scanner(System.in);
         System.out.println("Enter the full name and path of file to convert:");
         // read in the test file
@@ -29,11 +29,11 @@ public class RespondusFormatUtility {
         String input = new Scanner(rawTest).useDelimiter("\\Z").next();
 
         // find answer key pattern
-        Pattern p = Pattern.compile("(Answer:|ANSWER:|ANS:)(.*)");
+        Pattern p = Pattern.compile("(Answer:|ANSWER:|ANS:)(.*)");     
         Matcher m = p.matcher(input);
-
+     
         // store questions
-        StringBuffer preQuestionList = new StringBuffer();
+        StringBuffer questionList = new StringBuffer();
 
         // store answer key
         ArrayList<String> answerList = new ArrayList<>();
@@ -43,35 +43,29 @@ public class RespondusFormatUtility {
         while (m.find()) {
             number += 1;
             System.out.println("Found: " + m.group(1) + m.group(2));
-            m.appendReplacement(preQuestionList, "");
-            answerList.add(number + "." + m.group(2));
+            m.appendReplacement(questionList, "");
+            
+            //replace any extra comments or feedback data in the answer list
+            answerList.add(number + "." + m.group(2).replaceAll("%.*", ""));
 
-        }
-        // clear extra feedback data from test questions
-        StringBuffer postQuestionList = new StringBuffer();
-        Pattern p2 = Pattern.compile("(Diff:.*|Topic:.*|Skill:.*|Geog Standards:.*|Bloom's Taxonomy:.*)");
-        Matcher m2 = p2.matcher(preQuestionList);
-        while (m2.find()) {
-            m2.appendReplacement(postQuestionList, "");
-        }
-
-
+        }  
         //m.appendTail(questionList); will append whatever followed the last match  
         System.out.println();
-        System.out.println(postQuestionList);
-        System.out.println("Answers:");
-
+        
+        // clear extra comments or feedback data from test questions
+        String cleanedQuestionList = questionList.toString().replaceAll("Diff:.*|Topic:.*|Skill:.*|Geog Standards:.*|Bloom's Taxonomy:.*", "");
+             
+        // print to console
         //String header = "\n";
         String footer = "\n";
         String delim = "\n";
-        StringBuilder test = new StringBuilder();
-
-        // print to console
+        StringBuilder test = new StringBuilder();        
+        System.out.println(cleanedQuestionList);  
+        System.out.println("Answers:");
         for (String answer : answerList) {
             test.append(answer).append(delim);
 
         }
-
         System.out.println(test.append(footer).toString());
 
         // Print to file
@@ -79,15 +73,13 @@ public class RespondusFormatUtility {
         File file = new File("formatted_test.txt");
 
         bw = new BufferedWriter(new FileWriter(file));
-        bw.write(postQuestionList.toString());
+        bw.write(cleanedQuestionList);
 
-        bw.write("\nAnswers:\n");
+        bw.write("\r\nAnswers:\n");
         for (String answer : answerList) {
             bw.write("\r\n");
             bw.write(answer);
         }
-
         bw.close();
-
     }
 }
