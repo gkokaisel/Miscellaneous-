@@ -108,8 +108,8 @@ def set_file_paths():
     global save_output, output_file, test_file
     
     # load GUI to begin program dialog   
-    msg = "This program will attempt to format a test file file for use with Respondus, Do you want to continue?"
-    title = "Respondus Converter version 1.0 Beta"
+    msg = "This program will attempt to format a test file for use with Respondus, Do you want to continue?"
+    title = "Respondus Format Utility version 1.0 Beta"
     if easygui.ccbox(msg, title):  # show a Continue/Cancel dialog
         pass  # user chose Continue
     else:  # user chose Cancel
@@ -117,18 +117,18 @@ def set_file_paths():
     
     # launch GUI to choose location for output file    
     save_output = sys.stdout
-    output_file = open(easygui.filesavebox(msg='Where to save formatted test file?',
+    output_file = open(easygui.filesavebox(msg='Before we begin choose where to save your formatted test file?',
                    default='formatted_test.txt'), 'w')
     sys.stdout = output_file
     
     # launch GUI to load test file, and store as string (replacing singles lines with double lines to make matching regexes easier)    
-    file_choice = easygui.indexbox(msg="Choose file type (Note: Word is very experimental)",
+    file_choice = easygui.indexbox(msg="Choose the file type of your test file (Note: Word is very experimental)",
                                    choices=("Plain text file (.txt)", "Word 2007, 2010 file (.docx)", "Quit"))
     
     if file_choice is 0:   
         
         # launch GUI to load test file     
-        input_file = easygui.fileopenbox(msg='Where is test file to format?')
+        input_file = easygui.fileopenbox(msg='Where is the test file to format?')
         try:
             with open(input_file) as inputFileHandle:
                 test_file = inputFileHandle.read().replace('\n', '\n\n')
@@ -139,7 +139,7 @@ def set_file_paths():
     elif file_choice is 1: 
         
         # launch GUI to load document and unzip files       
-        docx = zipfile.ZipFile(easygui.fileopenbox(msg='Where is test file to format?'))
+        docx = zipfile.ZipFile(easygui.fileopenbox(msg='Where is the test file to format?'))
         
         # load xml document from word directory
         content = docx.read('word/document.xml')
