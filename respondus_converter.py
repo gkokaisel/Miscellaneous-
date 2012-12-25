@@ -30,7 +30,7 @@ r'''
                                                                        # Bloom's Taxonomy:  Knowledge
 
 '''
-stastical_regexes = \
+statistical_regexes = \
 r'''
 
 (%.*)                                                                  # removes any stastical type of feedback from test...
@@ -40,7 +40,7 @@ r'''
 
 # helper function to distinquish between test questions and test answer key 
 def process_test(test):      
-    answer_key = []
+  
     # re.I ignores letter case, and re.X ignores comments and whitespace (unless included in pattern) within regular expression      
     answer_match = re.findall(answer_regexes, test, flags=re.I | re.X)
  
@@ -65,7 +65,7 @@ def format_answers(answers):
         answers = str(number) + '.' + answer
         
         # remove any stastical type feedback from answer key
-        print re.sub(stastical_regexes, "", answers, flags=re.I | re.X)
+        print re.sub(statistical_regexes, "", answers, flags=re.I | re.X)
 
 # main function to launch program dialog, and to set input and output file paths
 def main():
