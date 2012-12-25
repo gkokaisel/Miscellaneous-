@@ -61,8 +61,8 @@ def format_answers(answers):
     number = 0
     for answer in answers:       
         number += 1    
-        # append ordered numbers to answer key   
-        answers = str(number) + '.' + answer
+        # append ordered numbers to answer key, remove any stray colons   
+        answers = str(number) + '.' + answer.replace(":", "")
         
         # remove any stastical type feedback from answer key
         print re.sub(statistical_regexes, "", answers, flags=re.I | re.X)
@@ -110,6 +110,7 @@ def main():
         
         # substitute xml tags with line breaks (still needs tweaking, but sorta works)     
         test_file = re.sub('<(.|\n)*?>', '\n', content)
+
         process_test(test_file)
     else:
         sys.exit(0)  
