@@ -22,7 +22,8 @@ answer_regexes = \
 feedback_regexes = \
 r'''
 
-(Diff:.*|Topic:.*|Skill:.*|Geog\sStandards:.*|Bloom's\sTaxonomy:.*)    # find common feedback terms...
+(Diff:.*|Topic:.*|Skill:.*|Geog\sStandards:.*|Bloom's\sTaxonomy:.*|AACSB:.*|Question\sStatus:.*)    
+                                                                       # find common feedback terms...
                                                                        # Diff: 3
                                                                        # Topic:  Shape of Earth
                                                                        # Geog Standards:  New Geog Standards 4
@@ -36,17 +37,40 @@ r'''
                                                                        # % correct 60      a= 60  b= 7  c= 18  d= 16      r = .21   
                                                                                                                                                 
 '''
-# a list for storing answers
-answer_key = []
 
-# some strings for working with the i/o files
-save_output = ''
-output_file = ''
-test_file = ''
+# helper function to distinquish between test questions and test answer key 
+def process_test_file(test_file):      
+    answer_key = []
+    # re.I ignores letter case, and re.X ignores comments and whitespace (unless included in pattern) within regular expression      
+    answer_match = re.findall(answer_regexes, test_file, flags=re.I | re.X)
+ 
+    if answer_match:   
+        # list comprehension to return just the letter answer within tuple
+        answer_key = [x[1] for x in answer_match]
+        
+        # sustitute answers with empty string   
+        clean_test = re.sub(answer_regexes, '', test_file, flags=re.I | re.X)      
+        print re.sub(feedback_regexes, '', clean_test, flags=re.I | re.X)   
+        format_answer_key(answer_key)
+         
+# helper function to format answer key in Respondus format   
+def format_answer_key(answer_key):   
+  
+     
+    # the following code will print answer key as a numerically ordered list of answers in Respondus format  
+    print 'Answers:'
+    number = 0
+    for answer in answer_key:       
+        number += 1    
+        # append ordered numbers to answer key   
+        answer_key = str(number) + '.' + answer
+        
+        # remove any stastical type feedback from answer key
+        print re.sub(stastical_regexes, "", answer_key, flags=re.I | re.X)
 
-# helper function to launch program dialog, and to set input and output file paths
-def set_file_paths():
-    global save_output, output_file, test_file
+
+# main function to launch program dialog, and to set input and output file paths
+def main():
     
     # load GUI to begin program dialog   
     msg = "This program will attempt to format a test file for use with Respondus, Do you want to continue?"
@@ -73,6 +97,7 @@ def set_file_paths():
         try:
             with open(input_file) as inputFileHandle:
                 test_file = inputFileHandle.read().replace('\n', '\n\n')
+                process_test_file(test_file)
         except IOError:
             sys.stderr.write('Could not open %s\n' % input_file)
             sys.exit(-1)  
@@ -87,49 +112,21 @@ def set_file_paths():
         
         # substitute xml tags with line breaks (still needs tweaking, but sorta works)     
         test_file = re.sub('<(.|\n)*?>', '\n', content)
+        process_test_file(test_file)
     else:
-        sys.exit(0)
- 
-# helper function to distinquish between test questions and test answer key 
-def process_test_file():      
-    global answer_key          
-  
-    # re.I ignores letter case, and re.X ignores comments and whitespace (unless included in pattern) within regular expression      
-    answer_match = re.findall(answer_regexes, test_file, flags=re.I | re.X)
- 
-    if answer_match:   
-        # list comprehension to return just the letter answer within tuple
-        answer_key = [x[1] for x in answer_match]
+        sys.exit(0)  
         
-        # sustitute answers with empty string   
-        clean_test = re.sub(answer_regexes, '', test_file, flags=re.I | re.X)      
-        print re.sub(feedback_regexes, '', clean_test, flags=re.I | re.X)   
-        
-         
-# helper function to format answer key in Respondus format   
-def format_answer_key():   
-    global answer_key  
-     
-    # the following code will print answer key as a numerically ordered list of answers in Respondus format  
-    print 'Answers:'
-    number = 0
-    for answer in answer_key:       
-        number += 1    
-        # append ordered numbers to answer key   
-        answer_key = str(number) + '.' + answer
-        
-        # remove any stastical type feedback from answer key
-        print re.sub(stastical_regexes, "", answer_key, flags=re.I | re.X)
+    # flush and close output
+    output_file.flush()
+    output_file.close()
+    sys.stdout = save_output
+            
 
-# load helper functions
-set_file_paths()
-process_test_file()
-format_answer_key()
+if __name__ == "__main__":
+    main()
+
 
 # load GUI to display success message
 easygui.msgbox("Format complete!", ok_button="Close", image="tick_64.png")
 
-# flush and close output
-output_file.flush()
-output_file.close()
-sys.stdout = save_output
+
