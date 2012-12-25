@@ -12,89 +12,30 @@ import easygui  # http://www.ferg.org/easygui/tutorial.html#contents_item_9.2
 
 # regular expressions to find test_file answers (very useful pythonic regex tool online http://re-try.appspot.com/)
 
-regex_case_one = \
+answer_regexes = \
     r'''
             
-\banswer\b[' '][a-z]{1}                     # Match word answer (ignoring case), followed by a space, followed by exactly one alpha character
-                                            # for the following case... Answer a
+(Answer|Answer:|ANSWER:|ANS:)(.*)                                      # find answer key in its many variations                                        
                                         
 
             '''
-regex_case_two = \
-    r'''
+feedback_regexes = \
+r'''
 
-\bans\b[':'][a-z]{1}                        # Match word ans (ignoring case), followed by colon, followed by exactly one alpha character
-                                            # For the following case... ANS: a
+(Diff:.*|Topic:.*|Skill:.*|Geog\sStandards:.*|Bloom's\sTaxonomy:.*)    # find common feedback terms...
+                                                                       # Diff: 3
+                                                                       # Topic:  Shape of Earth
+                                                                       # Geog Standards:  New Geog Standards 4
+                                                                       # Bloom's Taxonomy:  Knowledge
 
-            '''
-regex_case_three_a = \
-    r'''
+'''
+stastical_regexes = \
+r'''
 
-\banswer\b[' ']+[a-z]{1}                    # Match word answer (ignoring case), followed by one or more spaces, followed by exactly one alpha character
-                                            # For the following case... Answer  d     
-
-
-            '''
-regex_case_three_b = \
-    r'''
-           
-\banswer\b[' ']+[a-z]+.*                    # Match word answer (ignoring case), followed by one or more spaces, followed by one or more alpha characters, 
-                                            # followed by any character to end of line
-                                            
-                                            # For the following case... 
-                                            # Answer  d     % correct 45      a= 12  b= 30  c= 14  d= 45      r = .41
-
-            '''
-regex_case_four_a = \
-    r'''
-
-\banswer\b[':'][' ']+[a-z]{1}               # Match word answer (ignoring case), followed by colon, followed by one or more spaces, followed by exactly one
-                                            # alpha character
-                                            
-                                            # For the following case... Answer: a
-
-            '''
-regex_case_four_b = \
-    r'''
-
-(\banswer\b[':'][' ']+[a-z].*)              # Match word answer (ignoring case), followed by colon, followed by one or more spaces, followed by an alpha 
-                                            # character, followed by any character to end of line
-(\n+[a-z].*)+                               # Match a new line, followed by an alpha character, followed by any character to end of line, repeat pattern
-                                                                                  
-                                            
-|\banswer\b[':'][' ']+[a-z]+.*              # Or, match word answer (ignoring case), followed by colon, followed by one or more spaces, 
-                                            # followed by one or more alpha characters, followed by any character to end of line
-                                            
-                                            # For the following cases...
-                                            # Answer: C
-                                            # or...
-                                            # Answer: D
-                                            # Diff: 2 Page Ref: 6
-                                            # Topic: Before Civilization
-                                            # Skill: Conceptual
-                                            # or even...
-                                            # Answer:  B
-                                            # Diff: 2
-                                            # Topic:  The Solar System
-                                            # Geog Standards:  New Geog Standards 4
-                                            # Bloom's Taxonomy:  Knowledge
-                                            # even better...
-                                            # Answer:  D
-                                            # Diff: 1
-                                            # Topic:  3.1 Demand
-                                            # Question Status:  Previous Edition
-
-
-            '''
-            
-# initialize global variables
-
-# boolean flags are for each regular expression case
-case_one = False
-case_two = False
-case_three = False
-case_four = False
-
+(\%.*)                                                                 # removes any stastical type of feedback from test...
+                                                                       # % correct 60      a= 60  b= 7  c= 18  d= 16      r = .21   
+                                                                                                                                                
+'''
 # a list for storing answers
 answer_key = []
 
@@ -151,86 +92,34 @@ def set_file_paths():
  
 # helper function to distinquish between test questions and test answer key 
 def process_test_file():      
-    global answer_key, case_one, case_two, case_three, case_four           
-    # find matches for the various regular expression cases
-    # re.I ignores letter case, and re.X ignores comments and whitespace (unless included in pattern) within regular expression
-    
-    # If case 1    
-    answer_match = re.findall(regex_case_one, test_file, flags=re.I | re.X)
-    if answer_match:
-        case_one = True
-        answer_key = answer_match        
-    
-        # prints the test questions without answer key by substituting matched answers with empty string    
-        print re.sub(regex_case_one, '', test_file, flags=re.I | re.X)
+    global answer_key          
+  
+    # re.I ignores letter case, and re.X ignores comments and whitespace (unless included in pattern) within regular expression      
+    answer_match = re.findall(answer_regexes, test_file, flags=re.I | re.X)
+ 
+    if answer_match:   
+        # list comprehension to return just the letter answer within tuple
+        answer_key = [x[1] for x in answer_match]
         
-    
-    # If case 2    
-    answer_match = re.findall(regex_case_two, test_file, flags=re.I | re.X)
-    if answer_match:
-        case_two = True
-        answer_key = answer_match
+        # sustitute answers with empty string   
+        clean_test = re.sub(answer_regexes, '', test_file, flags=re.I | re.X)      
+        print re.sub(feedback_regexes, '', clean_test, flags=re.I | re.X)   
         
-        # prints the test questions without answer key by substituting matched answers with empty string   
-        print re.sub(regex_case_two, '', test_file, flags=re.I | re.X)
-       
-    
-    # If case 3    
-    answer_match = re.findall(regex_case_three_a, test_file, flags=re.I | re.X)
-    if answer_match:
-        case_three = True
-        answer_key = answer_match
-        
-        # prints the test questions without answer key by substituting matched answers with empty string    
-        print re.sub(regex_case_three_b, '', test_file, flags=re.I | re.X)
-    
-    
-    # If case 4    
-    answer_match = re.findall(regex_case_four_a, test_file, re.I | re.X)
-    if answer_match:
-        case_four = True
-        answer_key = answer_match
-        
-        # prints the test questions without answer key by substituting matched answers with empty string     
-        print re.sub(regex_case_four_b, '', test_file, flags=re.I | re.X)
-       
+         
 # helper function to format answer key in Respondus format   
 def format_answer_key():   
-    global answer_key, case_one, case_two, case_three, case_four    
+    global answer_key  
      
     # the following code will print answer key as a numerically ordered list of answers in Respondus format  
     print 'Answers:'
     number = 0
-    for answer in answer_key:
-        number += 1
-    
+    for answer in answer_key:       
+        number += 1    
         # append ordered numbers to answer key   
         answer_key = str(number) + '.' + answer
-    
-        # remove the word answer from answer key ignoring case sensitivity    
-        if case_one or case_three:
-    
-            # returns the answer string in qoutes wherever found without case sensitivity    
-            insensitive_answer = re.compile(re.escape('answer'), flags=re.I)
-    
-            # substitutes the answer string with an empty string (thereby removing it from list)    
-            print insensitive_answer.sub('', answer_key)
-            
-        elif case_two:
-            
-            # returns the answer string in qoutes wherever found without case sensitivity    
-            insensitive_answer = re.compile(re.escape('ans:'), flags=re.I)
-            
-            # substitutes the answer string with an empty string (thereby removing it from list)  
-            print insensitive_answer.sub('', answer_key)
-            
-        elif case_four:
-            
-            # returns the answer string in qoutes wherever found without case sensitivity   
-            insensitive_answer = re.compile(re.escape('answer:'), flags=re.I)
-            
-            # substitutes the answer string with an empty string (thereby removing it from list)  
-            print insensitive_answer.sub('', answer_key)
+        
+        # remove any stastical type feedback from answer key
+        print re.sub(stastical_regexes, "", answer_key, flags=re.I | re.X)
 
 # load helper functions
 set_file_paths()
