@@ -3,6 +3,7 @@
  * for use with Respondus
  */
 package respondus.format.utility;
+
 /**
  *
  * @author Gary
@@ -28,11 +29,11 @@ public class RespondusFormatUtility {
         Pattern p = Pattern.compile("(Answer:|\\bAnswer\\b|ANS:)(.*)", Pattern.CASE_INSENSITIVE);
         Matcher m = p.matcher(input);
         StringBuffer questionList = new StringBuffer();
-        ArrayList<String> answerList = new ArrayList<>(); 
+        ArrayList<String> answerList = new ArrayList<>();
         int number = 0;
         while (m.find()) {
             number += 1;
-            System.out.println("Found: " + m.group(1) + m.group(2));
+            //System.out.println("Found: " + m.group(1) + m.group(2));
             if (m.group(2).contains("TRUE") || (m.group(2).contains("FALSE"))) {
                 m.appendReplacement(questionList, "A) True\r\nB) False\r\n");
             } else {
@@ -72,15 +73,15 @@ public class RespondusFormatUtility {
             if (i == -1) {
                 break;
             }
-            char c = (char) i;
-            if (c == ' ' || c == '"' || c == '(' || c == '.' || c == '/' || c == '\\' || c == ',') {
-                properCase.append(c);
+            String s = Character.toString((char) (i));
+            if (s.matches("[0-9]||[')']|['.']|[' ']")) {
+                properCase.append(s);
                 precededBySpace = true;
             } else {
                 if (precededBySpace) {
-                    properCase.append(Character.toUpperCase(c));
+                    properCase.append(s.toUpperCase());
                 } else {
-                    properCase.append(c);
+                    properCase.append(s);
                 }
                 precededBySpace = false;
             }
