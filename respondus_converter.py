@@ -19,13 +19,13 @@ import string
 import zipfile, re
 import easygui
 
-answer_regex =\
+answer_regex = \
 r'''
 
-(^Answer|\nAnswer|Answer:|ANSWER:|ANS:)(.*)                            # find answer key in its many variations
+(^Answer|\nAnswer|Answer:|ANS:)(.*)                            # find answer key in its many variations
 
 '''
-true_false_regex =\
+true_false_regex = \
 r'''
 
 (Answer:\s+True)|(Answer:\s+False)
@@ -33,7 +33,7 @@ r'''
 |(ANS:\s+True)|(ANS:\s+False)
 
 '''
-feedback_regex =\
+feedback_regex = \
 r'''
 
 (Diff:.*|Topic:.*|Skill:.*|Geog\sStandards:.*                          # find common feedback terms...
@@ -43,7 +43,7 @@ r'''
                                                                        # Bloom's Taxonomy:  Knowledge
 
 '''
-stats_regex =\
+stats_regex = \
 r'''
 
 (%.*)                                                       # removes any stastical type of feedback from test...
@@ -53,39 +53,42 @@ r'''
 regexes = [true_false_regex, answer_regex, feedback_regex, stats_regex]
 
 def main():
+    
     def process_test(test):
-        answer_match = string_find(answer_regex, test)
+        answer_match = string_find(regexes[1], test)
         if answer_match:
             answer_key = [x[1] for x in answer_match]
             test = string_replace(regexes[0], "A) True\nB) False\n", test)
-            for regex in regexes[1:2]:
+            for regex in regexes[1:]:
                 test = string_replace(regex, '', test)
             print test
             format_answers(answer_key)
+            
+    def string_find(pattern, string):
+        return re.findall(pattern, string, flags=re.I | re.X)            
 
     def string_replace(pattern, string_old, string_new):
         return re.sub(pattern, string_old, string_new, flags=re.I | re.X)
-
-    def string_find(pattern, string):
-        return re.findall(pattern, string, flags=re.I | re.X)
 
     def format_answers(answers):
         print 'Answers:'
         number = 0
         for answer in answers:
-            number += 1
-            answers = str(number) + '.' + answer.replace(":", "")
-            answers = string_replace(regexes[3], "", answers)
+            number += 1          
+            answers = string_replace(regexes[3], "", str(number) + '.' + answer.replace(":", ""))
             print string.capwords(answers)
-
+            
     msg = "This program will attempt to format a test file for use with Respondus, Do you want to continue?"
     title = "Respondus Format Utility version 1.5 Beta"
     if easygui.ccbox(msg, title):
         pass
     else:
-        sys.exit(0)
-    sys.stdout = open(easygui.filesavebox(msg='Before we begin choose where to save your formatted test file?',
-                                          default='formatted_test.txt'), 'w')
+        sys.exit(0)        
+    try:
+        sys.stdout = open(easygui.filesavebox(msg='Before we begin choose where to save your formatted test file?',
+                                          default='formatted_test.txt'), 'w')      
+    except TypeError:
+        sys.exit(-1) 
     file_choice = easygui.indexbox(msg="Choose the file type of your test file (Note: Word is very experimental)",
                                    choices=("Plain text file (.txt)", "Word 2007, 2010 file (.docx)", "Quit"))
     if file_choice is 0:
@@ -93,13 +96,16 @@ def main():
         try:
             with open(input_file) as inputFileHandle:
                 process_test(inputFileHandle.read().replace("\n", "\n\n"))
-        except IOError:
+        except (TypeError, IOError):
             sys.stderr.write('Could not open %s\n' % input_file)
             sys.exit(-1)
     elif file_choice is 1:
-        docx = zipfile.ZipFile(easygui.fileopenbox(msg='Where is the test file to format?'))
-        content = docx.read('word/document.xml')
-        process_test(re.sub('<(.|\n)*?>', '\n', content))
+        try:
+            with zipfile.ZipFile(easygui.fileopenbox(msg='Where is the test file to format?')) as docx:                
+                process_test(re.sub('<(.|\n)*?>', '\n', docx.read('word/document.xml')))                             
+        except (TypeError, AttributeError, IOError):
+            sys.stderr.write('Could not open %s\n' % zipfile)
+            sys.exit(-1)  
     else:
         sys.exit(0)
     easygui.msgbox("Format complete!", ok_button="Close", image="tick_64.png")
