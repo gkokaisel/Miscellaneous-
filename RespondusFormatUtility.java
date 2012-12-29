@@ -23,14 +23,18 @@ import java.util.regex.*;
 public class RespondusFormatUtility {
 
     public static void main(String[] args) throws FileNotFoundException, IOException {
-        Scanner getfile = new Scanner(System.in);
+        
+        Scanner getTest = new Scanner(System.in);
         System.out.println("Enter the full name and path of file to convert:");
-        File rawTest = new File(getfile.nextLine());     
-        String input = new Scanner(rawTest).useDelimiter("\\Z").next();      
-        Pattern p = Pattern.compile("(^Answer|\nAnswer|Answer:|ANS:)(.*)", Pattern.CASE_INSENSITIVE);
-        Matcher m = p.matcher(input);        
+        File rawTest = new File(getTest.nextLine());
+        String readTest = new Scanner(rawTest).useDelimiter("\\Z").next();
+
+        Pattern feedbackTerms = Pattern.compile("Diff:.*|Topic:.*|Skill:.*|Geog Standards:.*|Bloom's Taxonomy:.*");
+        Pattern ansKey = Pattern.compile("(^Answer|\nAnswer|Answer:|ANS:)(.*)", Pattern.CASE_INSENSITIVE);
         StringBuffer questionList = new StringBuffer();
         ArrayList<String> answerList = new ArrayList<>();
+        Matcher m = ansKey.matcher(readTest);
+        
         int number = 0;
         while (m.find()) {
             number += 1;
@@ -42,8 +46,9 @@ public class RespondusFormatUtility {
             }
             answerList.add(number + "." + m.group(2).replaceAll(":|%.*", ""));
         }
-        System.out.println();
-        String cleanedQuestionList = questionList.toString().replaceAll("Diff:.*|Topic:.*|Skill:.*|Geog Standards:.*|Bloom's Taxonomy:.*", "");
+        
+        System.out.println("\nBegin formatted test...\n");
+        String cleanedQuestionList = questionList.toString().replaceAll(feedbackTerms.toString(), "");
         String footer = "\n";
         String delim = "\n";
         StringBuilder test = new StringBuilder();
@@ -53,6 +58,7 @@ public class RespondusFormatUtility {
             test.append(answer).append(delim);
         }
         System.out.println(toProperCase(test.append(footer).toString()));
+        
         Writer bw = null;
         File file = new File("formatted_test.txt");
         bw = new BufferedWriter(new FileWriter(file));
@@ -64,7 +70,6 @@ public class RespondusFormatUtility {
         }
         bw.close();
     }
-
 
     public static String toProperCase(String theString) throws IOException {
         StringReader in = new StringReader(theString.toLowerCase());
