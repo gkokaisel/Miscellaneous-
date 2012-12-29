@@ -23,18 +23,24 @@ import java.util.regex.*;
 public class RespondusFormatUtility {
 
     public static void main(String[] args) throws FileNotFoundException, IOException {
-        
-        Scanner getTest = new Scanner(System.in);
+
+        Scanner inputFile = new Scanner(System.in);
         System.out.println("Enter the full name and path of file to convert:");
-        File rawTest = new File(getTest.nextLine());
-        String readTest = new Scanner(rawTest).useDelimiter("\\Z").next();
+        File testFile = new File(inputFile.nextLine());
+        String rawTest = new Scanner(testFile).useDelimiter("\\Z").next();
+
+        StringBuffer questionList = new StringBuffer();
+        ArrayList<String> answerList = new ArrayList<>();
+        formatTest(rawTest, questionList, answerList);
+
+    }
+
+    public static void formatTest(String rawTest, StringBuffer questionList, ArrayList answerList) throws IOException {
 
         Pattern feedbackTerms = Pattern.compile("Diff:.*|Topic:.*|Skill:.*|Geog Standards:.*|Bloom's Taxonomy:.*");
         Pattern ansKey = Pattern.compile("(^Answer|\nAnswer|Answer:|ANS:)(.*)", Pattern.CASE_INSENSITIVE);
-        StringBuffer questionList = new StringBuffer();
-        ArrayList<String> answerList = new ArrayList<>();
-        Matcher m = ansKey.matcher(readTest);
-        
+        Matcher m = ansKey.matcher(rawTest);
+
         int number = 0;
         while (m.find()) {
             number += 1;
@@ -46,7 +52,7 @@ public class RespondusFormatUtility {
             }
             answerList.add(number + "." + m.group(2).replaceAll(":|%.*", ""));
         }
-        
+
         System.out.println("\nBegin formatted test...\n");
         String cleanedQuestionList = questionList.toString().replaceAll(feedbackTerms.toString(), "");
         String footer = "\n";
@@ -54,25 +60,26 @@ public class RespondusFormatUtility {
         StringBuilder test = new StringBuilder();
         System.out.println(cleanedQuestionList);
         System.out.println("Answers:");
-        for (String answer : answerList) {
+        for (Object answer : answerList) {
             test.append(answer).append(delim);
         }
         System.out.println(toProperCase(test.append(footer).toString()));
-        
+
         Writer bw = null;
         File file = new File("formatted_test.txt");
         bw = new BufferedWriter(new FileWriter(file));
         bw.write(cleanedQuestionList);
         bw.write("\r\nAnswers:\n");
-        for (String answer : answerList) {
+        for (Object answer : answerList) {
             bw.write("\r\n");
             bw.write(toProperCase(answer));
         }
         bw.close();
     }
 
-    public static String toProperCase(String theString) throws IOException {
-        StringReader in = new StringReader(theString.toLowerCase());
+    public static String toProperCase(Object object) throws IOException {
+
+        StringReader in = new StringReader(object.toString().toLowerCase());
         boolean precededBySpace = true;
         StringBuilder properCase = new StringBuilder();
         while (true) {
