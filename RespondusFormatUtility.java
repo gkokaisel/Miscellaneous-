@@ -1,9 +1,7 @@
 /*
  * This program will format a test with answer key 
  * for use with Respondus
- * Resources:
- * code codex 
- * //the free code wiki
+ * 
  */
 package respondus.format.utility;
 
@@ -27,10 +25,10 @@ public class RespondusFormatUtility {
     public static void main(String[] args) throws FileNotFoundException, IOException {
         Scanner getfile = new Scanner(System.in);
         System.out.println("Enter the full name and path of file to convert:");
-        File rawTest = new File(getfile.nextLine());
-        String input = new Scanner(rawTest).useDelimiter("\\Z").next();
+        File rawTest = new File(getfile.nextLine());     
+        String input = new Scanner(rawTest).useDelimiter("\\Z").next();      
         Pattern p = Pattern.compile("(^Answer|\nAnswer|Answer:|ANS:)(.*)", Pattern.CASE_INSENSITIVE);
-        Matcher m = p.matcher(input);
+        Matcher m = p.matcher(input);        
         StringBuffer questionList = new StringBuffer();
         ArrayList<String> answerList = new ArrayList<>();
         int number = 0;
@@ -66,6 +64,7 @@ public class RespondusFormatUtility {
         }
         bw.close();
     }
+
 
     public static String toProperCase(String theString) throws IOException {
         StringReader in = new StringReader(theString.toLowerCase());
