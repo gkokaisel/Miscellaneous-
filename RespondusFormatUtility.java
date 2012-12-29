@@ -1,6 +1,9 @@
 /*
  * This program will format a test with answer key 
  * for use with Respondus
+ * Resources:
+ * code codex 
+ * //the free code wiki
  */
 package respondus.format.utility;
 
@@ -26,7 +29,7 @@ public class RespondusFormatUtility {
         System.out.println("Enter the full name and path of file to convert:");
         File rawTest = new File(getfile.nextLine());
         String input = new Scanner(rawTest).useDelimiter("\\Z").next();
-        Pattern p = Pattern.compile("(Answer:|\\bAnswer\\b|ANS:)(.*)", Pattern.CASE_INSENSITIVE);
+        Pattern p = Pattern.compile("(^Answer|\nAnswer|Answer:|ANS:)(.*)", Pattern.CASE_INSENSITIVE);
         Matcher m = p.matcher(input);
         StringBuffer questionList = new StringBuffer();
         ArrayList<String> answerList = new ArrayList<>();
@@ -39,7 +42,7 @@ public class RespondusFormatUtility {
             } else {
                 m.appendReplacement(questionList, "");
             }
-            answerList.add(number + "." + m.group(2).replaceAll("%.*", ""));
+            answerList.add(number + "." + m.group(2).replaceAll(":|%.*", ""));
         }
         System.out.println();
         String cleanedQuestionList = questionList.toString().replaceAll("Diff:.*|Topic:.*|Skill:.*|Geog Standards:.*|Bloom's Taxonomy:.*", "");
