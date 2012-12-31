@@ -19,20 +19,29 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.regex.*;
+import javax.swing.JOptionPane;
 
 public class RespondusFormatUtility {
 
     public static void main(String[] args) throws FileNotFoundException, IOException {
 
-        Scanner inputFile = new Scanner(System.in);
-        System.out.println("Enter the full name and path of file to convert:");
-        File testFile = new File(inputFile.nextLine());
-        String rawTest = new Scanner(testFile).useDelimiter("\\Z").next();
-
+        Object getFile = JOptionPane.showInputDialog(null, "Enter name of text file (i.e. astronomy101.txt)");
+        String theFile = (String) getFile;
+        File file = new File(theFile);
+        if (!theFile.endsWith(".txt")) {
+            System.out.println("Usage: This is not a text file!");
+            System.exit(0);
+        } else if (!file.exists()) {
+            System.out.println("File not found!");
+            System.exit(0);
+        }
+        //Scanner inputFile = new Scanner(System.in);
+        //System.out.println("Enter the full name and path of file to convert:");
+        //File testFile = new File(inputFile.nextLine());
+        String rawTest = new Scanner(file).useDelimiter("\\Z").next();
         StringBuffer questionList = new StringBuffer();
         ArrayList<String> answerList = new ArrayList<>();
         formatTest(rawTest, questionList, answerList);
-
     }
 
     public static void formatTest(String rawTest, StringBuffer questionList, ArrayList answerList) throws IOException {
@@ -46,15 +55,15 @@ public class RespondusFormatUtility {
             number += 1;
             //System.out.println("Found: " + m.group(1) + m.group(2));
             if (m.group(2).contains("TRUE") || (m.group(2).contains("FALSE"))) {
-                m.appendReplacement(questionList, "A) True\r\nB) False\r\n");
+                m.appendReplacement(questionList, "\nA) True\r\nB) False\r\n");
             } else {
                 m.appendReplacement(questionList, "");
             }
             answerList.add(number + "." + m.group(2).replaceAll(":|%.*", ""));
         }
-
-        System.out.println("\nBegin formatted test...\n");
         String cleanedQuestionList = questionList.toString().replaceAll(feedbackTerms.toString(), "");
+        /*
+        System.out.println("\nBegin formatted test...\n");        
         String footer = "\n";
         String delim = "\n";
         StringBuilder test = new StringBuilder();
@@ -64,9 +73,11 @@ public class RespondusFormatUtility {
             test.append(answer).append(delim);
         }
         System.out.println(toProperCase(test.append(footer).toString()));
-
+        */
         Writer bw = null;
-        File file = new File("formatted_test.txt");
+        Object getSaveFile = JOptionPane.showInputDialog(null, "Enter name for formatted test file (i.e myformattedtest.txt");
+        String saveFile = (String) getSaveFile;
+        File file = new File(saveFile);
         bw = new BufferedWriter(new FileWriter(file));
         bw.write(cleanedQuestionList);
         bw.write("\r\nAnswers:\n");
