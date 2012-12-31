@@ -25,7 +25,7 @@ public class RespondusFormatUtility {
 
     public static void main(String[] args) throws FileNotFoundException, IOException {
 
-        Object getFile = JOptionPane.showInputDialog(null, "Enter name of text file (i.e. astronomy101.txt)");
+        Object getFile = JOptionPane.showInputDialog("Test to Format", "Enter name of text file (i.e. astronomy101.txt)");
         String theFile = (String) getFile;
         File file = new File(theFile);
         if (!theFile.endsWith(".txt")) {
@@ -75,7 +75,7 @@ public class RespondusFormatUtility {
         System.out.println(toProperCase(test.append(footer).toString()));
         */
         Writer bw = null;
-        Object getSaveFile = JOptionPane.showInputDialog(null, "Enter name for formatted test file (i.e myformattedtest.txt");
+        Object getSaveFile = JOptionPane.showInputDialog("Give the file a name", "Enter name for formatted test file (i.e myformattedtest.txt");
         String saveFile = (String) getSaveFile;
         File file = new File(saveFile);
         bw = new BufferedWriter(new FileWriter(file));
