@@ -19,29 +19,34 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.regex.*;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 public class RespondusFormatUtility {
 
-    public static void main(String[] args) throws FileNotFoundException, IOException {
+    static JFrame frame;
 
-        Object getFile = JOptionPane.showInputDialog("Test to Format", "Enter name of text file (i.e. astronomy101.txt)");
-        String theFile = (String) getFile;
-        File file = new File(theFile);
-        if (!theFile.endsWith(".txt")) {
-            System.out.println("Usage: This is not a text file!");
-            System.exit(0);
-        } else if (!file.exists()) {
-            System.out.println("File not found!");
-            System.exit(0);
+    public static void main(String[] args) throws FileNotFoundException, IOException {
+        try {
+            Object getFile = JOptionPane.showInputDialog("Test to Format", "Enter name of text file (i.e. astronomy101.txt)");
+            String theFile = (String) getFile;
+            File file = new File(theFile);
+            if (!theFile.endsWith(".txt")) {
+                JOptionPane.showMessageDialog(frame, "Usage: This is not a text file!");
+                System.exit(0);
+            } else if (!file.exists()) {
+                JOptionPane.showMessageDialog(frame, "File not found!");
+                System.exit(0);
+            }
+            //Scanner inputFile = new Scanner(System.in);
+            //System.out.println("Enter the full name and path of file to convert:");
+            //File testFile = new File(inputFile.nextLine());
+            String rawTest = new Scanner(file).useDelimiter("\\Z").next();
+            StringBuffer questionList = new StringBuffer();
+            ArrayList<String> answerList = new ArrayList<>();
+            formatTest(rawTest, questionList, answerList);
+        } catch (NullPointerException npe) {
         }
-        //Scanner inputFile = new Scanner(System.in);
-        //System.out.println("Enter the full name and path of file to convert:");
-        //File testFile = new File(inputFile.nextLine());
-        String rawTest = new Scanner(file).useDelimiter("\\Z").next();
-        StringBuffer questionList = new StringBuffer();
-        ArrayList<String> answerList = new ArrayList<>();
-        formatTest(rawTest, questionList, answerList);
     }
 
     public static void formatTest(String rawTest, StringBuffer questionList, ArrayList answerList) throws IOException {
@@ -63,17 +68,17 @@ public class RespondusFormatUtility {
         }
         String cleanedQuestionList = questionList.toString().replaceAll(feedbackTerms.toString(), "");
         /*
-        System.out.println("\nBegin formatted test...\n");        
-        String footer = "\n";
-        String delim = "\n";
-        StringBuilder test = new StringBuilder();
-        System.out.println(cleanedQuestionList);
-        System.out.println("Answers:");
-        for (Object answer : answerList) {
-            test.append(answer).append(delim);
-        }
-        System.out.println(toProperCase(test.append(footer).toString()));
-        */
+         System.out.println("\nBegin formatted test...\n");        
+         String footer = "\n";
+         String delim = "\n";
+         StringBuilder test = new StringBuilder();
+         System.out.println(cleanedQuestionList);
+         System.out.println("Answers:");
+         for (Object answer : answerList) {
+         test.append(answer).append(delim);
+         }
+         System.out.println(toProperCase(test.append(footer).toString()));
+         */
         Writer bw = null;
         Object getSaveFile = JOptionPane.showInputDialog("Give the file a name", "Enter name for formatted test file (i.e myformattedtest.txt");
         String saveFile = (String) getSaveFile;
